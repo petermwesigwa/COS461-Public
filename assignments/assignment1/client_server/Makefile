@@ -18,5 +18,8 @@ client-go: client-go.go
 server-go: server-go.go
 	go build server-go.go
 
+longstring: longstring.c
+	gcc longstring.c -o longstring
+
 clean:
 	rm -f server-c client-c server-go client-go
