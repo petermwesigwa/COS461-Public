@@ -9,9 +9,7 @@ know one of the most popular application protocols on the Internet -- the
 Hypertext Transfer Protocol (HTTP). When you're done with the assignment, you
 should be able to configure Firefox to use your  proxy implementation.
 
-This is not a group assignment. You are not allowed to copy or look at code
-from other students. However, you are welcome to discuss the assignments with
-other students without sharing code.
+You may work in groups of 2-3. Please specify your teammates' name and NETID at the beginning of http_proxy.go and http_proxy_DNS.go.
 
 ## Introduction: The Hypertext Transfer Protocol
 
@@ -280,6 +278,10 @@ remote server are not the result of poorly forwarded requests from your proxy.)
 
 ### Testing Your Proxy
 
+Build your executables:
+
+`go build http_proxy.go`
+
 Run your proxy with the following command:
 
 `./http_proxy <port> &`, where `port` is the port number that the proxy should
@@ -311,7 +313,7 @@ through your proxy:
 python test_scripts/test_proxy.py http_proxy  <port (optional, will be random if omitted)>
 ```
 
-Once you have passed all 4 tests in `test_proxy.py`, try the
+Once you have passed all tests in `test_proxy.py`, try the
 `test_proxy_conc.py` script. This will test your proxy with different numbers
 of concurrent client connections.
 
@@ -373,6 +375,10 @@ be running on a particular IP address, or that clients will be coming from a
 pre-determined IP address.
 
 ### Testing Your DNS Prefetching Proxy
+
+Build your executables:
+
+`go build http_proxy_DNS.go`
 
 Test your DNS prefetching proxy the same way as you tested your original proxy.
 When using the test scripts, just change the first command line argument:
