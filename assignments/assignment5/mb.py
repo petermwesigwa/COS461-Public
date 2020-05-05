@@ -1,7 +1,7 @@
 ####################################################
 # mb.py
-# Name:
-# NetId:
+# Name: Peter Mwesigwa
+# NetId: mwesigwa
 #####################################################
 
 import sys
@@ -23,6 +23,10 @@ class PacketHandler:
         self.ip_map = ip_map
         # TODO: Create and initialize additional instance variables
         #       for detection and mitigation
+        self.requests = {}
+        self.unmatchedHostsCount = {}
+
+
 
         
 
@@ -62,6 +66,33 @@ class PacketHandler:
 
 	    # TODO: process the packet to perform DNS reflection attack
             #       detection and mitigation
+
+        P = 0.9
+
+        if IP in pkt and DNS in pkt:
+            # process DNS requests
+            if out_intf == "mb-eth1" and pkt[DNS].qr == 0:
+                dns_id = pkt[DNS].id
+                src_ip = pkt[IP].src
+                
+                ids = self.requests.get(src_ip, [])
+                ids.append(dns_id)
+                self.requests[src_ip] = ids
+        
+            # process DNS response
+            elif out_intf == "mb-eth0" and pkt[DNS].qr == 1:
+                dns_id = pkt[DNS].id
+                dest_ip = pkt[IP].dst
+                
+                pending_requests = self.requests.get(dest_ip, [])
+                if dns_id not in pending_requests:
+                    count = self.unmatchedHostsCount.get(dest_ip, 1)
+                    if count > 200:
+                        # do the mitigation
+                        if random() < P:
+                            return 
+
+                    self.unmatchedHostsCount[dest_ip] = count+1
 
 
             

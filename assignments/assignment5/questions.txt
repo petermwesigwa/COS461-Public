@@ -1,8 +1,8 @@
 ###########################################
 
 COS 461: Assignment 5
-Name: 
-NetId:
+Name: Peter Mwesigwa
+NetId: mwesigwa
 
 ###########################################
 
@@ -11,7 +11,7 @@ Question 1) Approximately how long into the simulation (seconds)
             is the DNS reflection attack detected? 
             How can you tell this from the DNS response rate plot?
 
-Answer 1) TODO
+Answer 1) About 600 seconds into attack
 
 
 ##########################################
@@ -19,7 +19,7 @@ Answer 1) TODO
 Question 2) With what probability does your implementation drop 
             DNS response packets to perform rate limiting?
 
-Answer 2) TODO
+Answer 2) 0.9
 
 
 ##########################################
@@ -29,7 +29,9 @@ Question 3) Why did you choose this probability?
             the DNS response rate plot? (Re-run the experiment
             with different probability values if you are not sure). 
 
-Answer 3) TODO
+Answer 3) Changing the probability changes the slope of the graph but not by much. 
+            I decided to use a very high probability of 0.9 to heavily minimize the traffic 
+            from hosts that are suspected to be running DNS attacks.
 
 
 ##########################################
@@ -39,7 +41,10 @@ Question 4) What components of the detection/mitigation technique used in this a
             may not be optimal for real-world deployment? 
             Choose one and explain how it could be improved.
 
-Answer 4) TODO
+Answer 4)   Keeping a hash table containing all the mappings of ip addresses to requests   
+            might not be practical in the real world as each middlebox would likely be  
+            tracking a large number of hosts that would have many entries in such a hash 
+            table.
 
 
 ##########################################
@@ -62,7 +67,12 @@ Question 5) DNS reflection attacks are of real concern in the global Internet,
             This question is intentionally open-ended and will be graded leniently. 
             Try to be concise yet thorough. 
 
-Answer 5) TODO
+Answer 5)   Attackers are able to spoof the victim's address because there is no system
+            that prevents one end host from putting another end host's IP address as the
+            source of a packet. I propose adding a check in each local area network where 
+            before sending out any DNS packet, a router checks to ensure that the packet 
+            contains the right source IP address. This would prevent the attacker from  
+            mislabeling its DNS packets with the IP address of the recipient.
             
 
 
