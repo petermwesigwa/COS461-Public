@@ -6,22 +6,25 @@
 
  // TODO: implement an HTTP proxy
 
- BUFFER_SIZE = 100000
+ package main
 
  import (
- 	"net",
- 	"net/http",
- 	"bufio",
- 	"io",
+ 	"os"
+ 	"net"
+ 	"net/http"
+ 	"bufio"
+ 	"log"
+ 	//"io"
  	//"fmt",
- 	"bytes"
+ 	//"bytes"
  )
 
  func main() {
+ 	var port string
  	if len(os.Args) < 2 {
-    	port := 80
+    	port = "80"
   	} else {
-  		port := os.Args[1]
+  		port = os.Args[1]
   	}
 
   	// listen for connection
@@ -46,10 +49,12 @@
 
  func handle_http(conn net.Conn) {
 
+ 	BUFFER_SIZE := 100000
+
  	// read data into buffer
   	rb := make([]byte, BUFFER_SIZE)
   	wb := make([]byte, BUFFER_SIZE)
- 	n, err := conn.Read(b)
+ 	n, err := conn.Read(rb)
 
  	// create bufio reader
  	r := bufio.NewReader(rb)
@@ -68,9 +73,7 @@
  	req.Header.Add("Connection", "close")
 
  	// send request
- 	client := &http.Client{
-		CheckRedirect: redirectPolicyFunc,
-	}
+ 	client := &http.Client{}
 	resp, err := client.Do(req)
 
 	// write to buffer and then to connection
@@ -81,7 +84,7 @@
 	conn.Close()
 
  }
-
+/*
  func client(server_ip string, server_port string) {
 
   b := make([]byte, SEND_BUFFER_SIZE)
@@ -132,3 +135,6 @@ func server(server_port string) {
   }
 
 }
+
+*/
+
