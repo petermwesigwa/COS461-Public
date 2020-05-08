@@ -13,7 +13,7 @@
  	"net/http",
  	"bufio",
  	"io",
- 	"fmt",
+ 	//"fmt",
  	"bytes"
  )
 
@@ -57,7 +57,9 @@
  	// read data into request data type
  	req, err := http.ReadRequest(r)
  	if err != nil || req.Method != "GET" {
- 		// return 500 internal server error
+ 		resp := []byte("HTTP/1.1 500 Internal Server Error\r\n")
+ 		conn.Write(resp)
+ 		conn.Close()
  		return
  	}
 
