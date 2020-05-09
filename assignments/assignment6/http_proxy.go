@@ -52,12 +52,17 @@
  	BUFFER_SIZE := 100000
 
  	// read data into buffer
-  	rb := make([]byte, BUFFER_SIZE)
-  	wb := make([]byte, BUFFER_SIZE)
- 	n, err := conn.Read(rb)
+  rb := make([]byte, BUFFER_SIZE)
+  wb := make([]byte, BUFFER_SIZE)
+ 	_, err := conn.Read(rb)
 
- 	// create bufio reader
- 	r := bufio.NewReader(rb)
+  // write to file
+  fw, err := os.Create("/http")
+  fw.Write(rb)
+
+  // create bufio reader
+  fr, err := os.Open("/http")
+ 	r := bufio.NewReader(fr)
 
  	// read data into request data type
  	req, err := http.ReadRequest(r)
@@ -77,7 +82,8 @@
 	resp, err := client.Do(req)
 
 	// write to buffer and then to connection
-	err = resp.Write(wb)
+	err = resp.Write(fw)
+  fr.Read(wb)
 	conn.Write(wb)
 
 	// close connection
