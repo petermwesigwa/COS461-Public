@@ -10,6 +10,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -87,15 +88,17 @@ func handle_http(conn net.Conn) {
 	client := &http.Client{
 		// Avoid following redirects
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
+			return errors.New("net/http: use last response")
 		},
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("Error: %s", err.Error())
-		resp := []byte("HTTP/1.1 500 Internal Server Error\r\n")
-		conn.Write(resp)
-		return
+		if err.Error() != "net/http: use last response" {
+			fmt.Printf("Error: %s", err.Error())
+			resp := []byte(fmt.Sprintf("HTTP/1.1 500 Internal Server Error: %s\r\n", err.Error()))
+			conn.Write(resp)
+			return
+		}
 	}
 
 	// write the response form the remote server to the client.
