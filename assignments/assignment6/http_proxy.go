@@ -53,12 +53,12 @@ func handle_http(conn net.Conn) {
 	// read data into buffer
 	rb := make([]byte, BUFFER_SIZE)
 	wb := make([]byte, BUFFER_SIZE)
-	_, err := conn.Read(rb)
+	n, err := conn.Read(rb)
 
 	// write request string to a file
 	rfd, err := os.Create("/tmp/read")
 	if err != nil {
-		resp := []byte("HTTP/1.1 500 Internal Server Error\r\n ")
+		resp := []byte("HTTP/1.1 500 Internal Server Error (read)\r\n ")
 		conn.Write(resp)
 		conn.Close()
 		return
@@ -66,12 +66,12 @@ func handle_http(conn net.Conn) {
 
 	wfd, err := os.Create("/tmp/write")
 	if err != nil {
-		resp := []byte("HTTP/1.1 500 Internal Server Error\r\n Failed to create write file\r\n")
+		resp := []byte("HTTP/1.1 500 Internal Server Error (write)\r\n")
 		conn.Write(resp)
 		conn.Close()
 		return
 	}
-	rfd.Write(rb)
+	rfd.Write(rb[:n])
 
 	// create bufio reader
 	r := bufio.NewReader(rfd)
@@ -86,8 +86,8 @@ func handle_http(conn net.Conn) {
 	// }
 
 	// read data into request data type
-	req, _ := http.ReadRequest(r)
-	if req.Method != "GET" {
+	req, err := http.ReadRequest(r)
+	if err != nil || req.Method != "GET" {
 		resp := []byte("HTTP/1.1 500 Internal Server Error\r\n")
 		log.Panic(err.Error())
 		conn.Write(resp)
