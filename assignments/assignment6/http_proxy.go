@@ -10,13 +10,12 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
-	//"io"
-	//"fmt",
-	//"bytes"
 )
 
 func main() {
@@ -28,10 +27,11 @@ func main() {
 	}
 
 	// listen for connection
-	ln, err := net.Listen("tcp", ":"+port)
+	ln, err := net.Listen("tcp", "127.0.0.1:"+port)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Printf("Listening on port %s\n", port)
 
 	for {
 		// accept a connection
@@ -48,50 +48,23 @@ func main() {
 
 func handle_http(conn net.Conn) {
 
-	BUFFER_SIZE := 100000
-
-	// read data into buffer
-	rb := make([]byte, BUFFER_SIZE)
-	wb := make([]byte, BUFFER_SIZE)
-	n, err := conn.Read(rb)
-
-	// write request string to a file
-	rfd, err := os.Create("/tmp/read")
-	if err != nil {
-		resp := []byte("HTTP/1.1 500 Internal Server Error (read)\r\n ")
-		conn.Write(resp)
-		conn.Close()
-		return
-	}
-
-	wfd, err := os.Create("/tmp/write")
-	if err != nil {
-		resp := []byte("HTTP/1.1 500 Internal Server Error (write)\r\n")
-		conn.Write(resp)
-		conn.Close()
-		return
-	}
-	rfd.Write(rb[:n])
+	// close the connection once done
+	defer conn.Close()
 
 	// create bufio reader
-	r := bufio.NewReader(rfd)
-
-	// lines := strings.Split(string(rb), "\r\n")
-	// params := strings.Split(lines[0], " ")
-	// if params[0] != "GET" || params[2] != "HTTP/1.1" {
-	// 	resp := []byte("HTTP/1.1 500 Internal Server Error\r\n")
-	// 	conn.Write(resp)
-	// 	conn.Close()
-	// 	return
-	// }
+	r := bufio.NewReader(conn)
 
 	// read data into request data type
 	req, err := http.ReadRequest(r)
-	if err != nil || req.Method != "GET" {
+	if err != nil {
 		resp := []byte("HTTP/1.1 500 Internal Server Error\r\n")
-		log.Panic(err.Error())
 		conn.Write(resp)
-		conn.Close()
+		return
+	}
+
+	if req.Method != "GET" {
+		resp := []byte("HTTP/1.1 500 Internal Server Error\r\n")
+		conn.Write(resp)
 		return
 	}
 
@@ -99,18 +72,41 @@ func handle_http(conn net.Conn) {
 	req.Header.Del("Connection")
 	req.Header.Add("Connection", "close")
 
+	// have to set req.URL not req.RequestURI for http.Client to work.
+	u, err := url.Parse(req.RequestURI)
+	if err != nil {
+		fmt.Printf("Error: %s", err.Error())
+		resp := []byte("HTTP/1.1 500 Internal Server Error\r\n")
+		conn.Write(resp)
+		return
+	}
+	req.URL = u
+	req.RequestURI = ""
+
 	// send request
-	client := &http.Client{}
+	client := &http.Client{
+		// Avoid following redirects
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Error: %s", err.Error())
+		resp := []byte("HTTP/1.1 500 Internal Server Error\r\n")
+		conn.Write(resp)
+		return
+	}
 
-	// write to buffer and then to connection
-	err = resp.Write(wfd)
-	wfd.Read(wb)
-	conn.Write(wb)
-
+	// write the response form the remote server to the client.
+	err = resp.Write(conn)
+	if err != nil {
+		fmt.Printf("Error: %s", err.Error())
+		resp := []byte("HTTP/1.1 500 Internal Server Error\r\n")
+		conn.Write(resp)
+		return
+	}
 	// close connection
-	conn.Close()
-
 }
 
 /*
