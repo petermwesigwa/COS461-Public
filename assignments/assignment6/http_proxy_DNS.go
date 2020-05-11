@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -98,18 +99,15 @@ func handle_http(conn net.Conn) {
 			return errors.New("net/http: use last response")
 		},
 	}
-	var RedirectAttemptedError = errors.New("net/http: use last response")
 	resp, err := client.Do(req)
-	if urlError, ok := err.(*url.Error); ok && urlError.Err == RedirectAttemptedError {
-		err = nil
-	}
 	if err != nil {
-		fmt.Printf("Error: %s", err.Error())
-		resp := []byte("HTTP/1.1 500 Internal Server Error\r\n")
-		conn.Write(resp)
-		return
+		if !strings.HasSuffix(err.Error(), "net/http: use last response") {
+			fmt.Printf("Error: %s", err.Error())
+			resp := []byte(fmt.Sprintf("HTTP/1.1 500 Internal Server Error: %s\r\n", err.Error()))
+			conn.Write(resp)
+			return
+		}
 	}
-
 	// DNS prefetching
 	resp_dns := resp
 	go send_dns(resp_dns.Body)
