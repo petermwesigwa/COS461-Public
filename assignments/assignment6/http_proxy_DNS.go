@@ -1,6 +1,6 @@
 /*****************************************************************************
- * http_proxy_DNS.go                                                                 
- * Names: 
+ * http_proxy_DNS.go
+ * Names:
  * NetIds:
  *****************************************************************************/
 
@@ -11,20 +11,19 @@
 // to add DNS prefetching (don't forget to change the filename in the header
 // to http_proxy_DNS.go in the copy of http_proxy.go)
 
-
 package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
+	"net/html"
 	"net/http"
 	"net/url"
-	"net/html"
 	"os"
-	"io"
-	"errors"
 )
 
 func main() {
@@ -99,7 +98,11 @@ func handle_http(conn net.Conn) {
 			return errors.New("net/http: use last response")
 		},
 	}
+	var RedirectAttemptedError = errors.New("net/http: use last response")
 	resp, err := client.Do(req)
+	if urlError, ok := err.(*url.Error); ok && urlError.Err == RedirectAttemptedError {
+		err = nil
+	}
 	if err != nil {
 		fmt.Printf("Error: %s", err.Error())
 		resp := []byte("HTTP/1.1 500 Internal Server Error\r\n")
