@@ -1,7 +1,7 @@
 /*****************************************************************************
  * http_proxy.go
- * Names:
- * NetIds:
+ * Names: Peter Mwesigwa, Matthew Fastow, Greg Smith
+ * NetIds: mwesigwa, mfastow, gpsmith
  *****************************************************************************/
 
 // TODO: implement an HTTP proxy

@@ -1,7 +1,7 @@
 /*****************************************************************************
  * http_proxy_DNS.go
- * Names:
- * NetIds:
+ * Names: Peter Mwesigwa, Matthew Fastow, Greg Smith
+ * NetIds: mwesigwa, mfastow, gpsmith
  *****************************************************************************/
 
 // TODO: implement an HTTP proxy with DNS Prefetching
@@ -108,9 +108,6 @@ func handle_http(conn net.Conn) {
 			return
 		}
 	}
-	// DNS prefetching
-	resp_dns := resp
-	go send_dns(resp_dns.Body)
 
 	// write the response form the remote server to the client.
 	err = resp.Write(conn)
@@ -120,7 +117,9 @@ func handle_http(conn net.Conn) {
 		conn.Write(resp)
 		return
 	}
-
+	// DNS prefetching
+	resp_dns := resp
+	go send_dns(resp_dns.Body)
 	// close connection
 }
 
